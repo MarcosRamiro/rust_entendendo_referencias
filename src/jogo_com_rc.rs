@@ -32,8 +32,8 @@ impl Jogador {
         Self { nome, eh_vencedor }
     }
 
-    fn tornar_vencedor(&self) -> Self {
-        Self::new(self.get_nome().to_string(), true)
+    fn tornar_vencedor(vencedor: Rc<Self>) -> Self {
+        Self::new(vencedor.get_nome().to_string(), true)
     }
 
     /***
@@ -67,7 +67,7 @@ impl PartialEq for Jogada {
     }
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
 enum EstadoJogo {
     Aberto,
     Empate,
@@ -93,13 +93,14 @@ impl FazerJogada for Jogo {
 
         self.adicionar_jogada(jogada)?;
 
-        if let Some(value) = self.is_jogada_vencedora(&jogador) {
-            return value;
+        if let Some(novo_estado_jogo) = self.is_jogada_vencedora(Rc::clone(&jogador)) {
+            self.estado_jogo = novo_estado_jogo?;
+            return Ok(self.estado_jogo.clone());
         }
 
         if !self.tem_jodada_disponivel() {
             self.estado_jogo = EstadoJogo::Empate;
-            return Ok(EstadoJogo::Empate);
+            return Ok(self.estado_jogo.clone());
         }
 
         Ok(EstadoJogo::Aberto)
@@ -114,21 +115,25 @@ impl Jogo {
         }
     }
 
-    fn is_venceu_jogo(&self, posicao_1: &Jogada, posicao_2: &Jogada, posicao_3: &Jogada) -> bool {
-        self.jogadas.contains(&posicao_1)
-            && self.jogadas.contains(&posicao_2)
-            && self.jogadas.contains(&posicao_3)
-    }
-
     fn tem_jodada_disponivel(&self) -> bool {
         !(self.jogadas.len() == 9)
     }
 
-    fn is_jogada_vencedora(&mut self, jogador: &Rc<Jogador>) -> Option<Result<EstadoJogo, String>> {
+    fn is_jogada_vencedora(&self, jogador: Rc<Jogador>) -> Option<Result<EstadoJogo, String>> {
+        fn is_venceu_jogo(
+            jogadas: &Vec<Jogada>,
+            posicao_1: &Jogada,
+            posicao_2: &Jogada,
+            posicao_3: &Jogada,
+        ) -> bool {
+            jogadas.contains(&posicao_1)
+                && jogadas.contains(&posicao_2)
+                && jogadas.contains(&posicao_3)
+        }
+
         for (posicao_1, posicao_2, posicao_3) in get_jogadas_vencedoras(Rc::clone(&jogador)) {
-            if self.is_venceu_jogo(&posicao_1, &posicao_2, &posicao_3) {
-                let vencedor: Rc<Jogador> = Rc::new(jogador.tornar_vencedor());
-                self.estado_jogo = EstadoJogo::Finalizado(Rc::clone(&vencedor));
+            if is_venceu_jogo(&self.jogadas, &posicao_1, &posicao_2, &posicao_3) {
+                let vencedor: Rc<Jogador> = Rc::new(Jogador::tornar_vencedor(jogador));
                 return Some(Ok(EstadoJogo::Finalizado(vencedor)));
             }
         }
@@ -152,21 +157,16 @@ impl Jogo {
     }
 }
 
-
-
 fn get_jogadas_vencedoras(jogador: Rc<Jogador>) -> Vec<(Jogada, Jogada, Jogada)> {
+    fn construir_tupla(
+        n1: i32,
+        n2: i32,
+        n3: i32,
+        jogador: Rc<Jogador>,
+    ) -> (Jogada, Jogada, Jogada) {
+        let criar_jogada = |posicao: i32| -> Jogada { Jogada::new(posicao, Rc::clone(&jogador)) };
 
-    fn construir_tupla(n1: i32, n2: i32, n3: i32, jogador: Rc<Jogador>) -> (Jogada, Jogada, Jogada) {
-
-        let criar_jogada = |posicao: i32| -> Jogada {
-            Jogada::new(posicao, Rc::clone(&jogador))
-        };
-
-        (
-            criar_jogada(n1),
-            criar_jogada(n2),
-            criar_jogada(n3),
-        )
+        (criar_jogada(n1), criar_jogada(n2), criar_jogada(n3))
     }
 
     let mut retorno = Vec::new();
@@ -182,12 +182,8 @@ fn get_jogadas_vencedoras(jogador: Rc<Jogador>) -> Vec<(Jogada, Jogada, Jogada)>
     retorno
 }
 
-
 pub fn jogar() {
-
-    let is_posicao_invalida = |posicao: i32| -> bool {
-        posicao < 1 || posicao > 9
-    };
+    let is_posicao_invalida = |posicao: i32| -> bool { posicao < 1 || posicao > 9 };
 
     let maria = Rc::new(Jogador::maria());
     let joao = Rc::new(Jogador::joao());
