@@ -6,7 +6,7 @@ const MSG_JOGADA_DUPLICADA: &str = "Jogada duplicada.";
 #[derive(Debug)]
 struct Jogador {
     nome: String,
-    ganhei: bool,
+    eh_vencedor: bool,
 }
 
 impl PartialEq for Jogador {
@@ -17,29 +17,32 @@ impl PartialEq for Jogador {
 
 impl Jogador {
     fn maria() -> Self {
-        Self {
-            nome: "Maria".to_string(),
-            ganhei: false,
-        }
+        Self::new("Maria".to_string(), false)
     }
+
     fn joao() -> Self {
-        Self {
-            nome: "Joao".to_string(),
-            ganhei: false,
-        }
+        Self::new("Joao".to_string(), false)
     }
+
     fn get_nome(&self) -> &str {
         self.nome.as_str()
+    }
+
+    fn new(nome: String, eh_vencedor: bool) -> Self {
+        Self { nome, eh_vencedor }
+    }
+
+    fn tornar_vencedor(&self) -> Self {
+        Self::new(self.get_nome().to_string(), true)
     }
 
     /***
     caso seja necessário atualizar o campo Jogador.ganhei, será necessário mudar o tipo,
     pois apenas o Rc<T> não permite mutação.
     Isso será resolvido em outro múdulo.
+    Estive pensando em progração funcional. O ideal é evitar dado mutável, seria melhor
+    criar um novo Jogador, com o status atualizado.
      */
-    fn atualizar_ganhador(&self, ganhei: bool) {
-        println!("atualizar_ganhador {}", ganhei);
-    }
 }
 
 #[derive(Debug, Clone)]
@@ -48,12 +51,9 @@ struct Jogada {
     jogador: Rc<Jogador>,
 }
 
-impl Jogada{
+impl Jogada {
     fn new(posicao: i32, jogador: Rc<Jogador>) -> Self {
-        Self {
-            posicao: posicao,
-            jogador: jogador,
-        }
+        Self { posicao, jogador }
     }
 
     fn get_posicao(&self) -> i32 {
@@ -83,12 +83,6 @@ trait FazerJogada {
     fn jogar(&mut self, posicao: i32, jogador: Rc<Jogador>) -> Result<EstadoJogo, String>;
 }
 
-fn is_jogada_duplicada(jogadas: &Vec<Jogada>, jogada: &Jogada) -> bool {
-    jogadas
-        .iter()
-        .any(|jogada_| jogada_.get_posicao() == jogada.get_posicao())
-}
-
 impl FazerJogada for Jogo {
     fn jogar(&mut self, posicao: i32, jogador: Rc<Jogador>) -> Result<EstadoJogo, String> {
         if self.estado_jogo != EstadoJogo::Aberto {
@@ -97,24 +91,13 @@ impl FazerJogada for Jogo {
 
         let jogada = Jogada::new(posicao, Rc::clone(&jogador));
 
-        if is_jogada_duplicada(&self.jogadas, &jogada) {
-            return Err(MSG_JOGADA_DUPLICADA.to_string());
+        self.adicionar_jogada(jogada)?;
+
+        if let Some(value) = self.is_jogada_vencedora(&jogador) {
+            return value;
         }
 
-        self.jogadas.push(jogada);
-
-        for (posicao_1, posicao_2, posicao_3) in get_jogadas_vencedoras(Rc::clone(&jogador)) {
-            if self.jogadas.contains(&posicao_1)
-                && self.jogadas.contains(&posicao_2)
-                && self.jogadas.contains(&posicao_3)
-            {
-                self.estado_jogo = EstadoJogo::Finalizado(Rc::clone(&jogador));
-                jogador.atualizar_ganhador(true);
-                return Ok(EstadoJogo::Finalizado(jogador));
-            }
-        }
-
-        if self.jogadas.len() == 9 {
+        if !self.tem_jodada_disponivel() {
             self.estado_jogo = EstadoJogo::Empate;
             return Ok(EstadoJogo::Empate);
         }
@@ -130,26 +113,62 @@ impl Jogo {
             jogadas: Vec::new(),
         }
     }
+
+    fn is_venceu_jogo(&self, posicao_1: &Jogada, posicao_2: &Jogada, posicao_3: &Jogada) -> bool {
+        self.jogadas.contains(&posicao_1)
+            && self.jogadas.contains(&posicao_2)
+            && self.jogadas.contains(&posicao_3)
+    }
+
+    fn tem_jodada_disponivel(&self) -> bool {
+        !(self.jogadas.len() == 9)
+    }
+
+    fn is_jogada_vencedora(&mut self, jogador: &Rc<Jogador>) -> Option<Result<EstadoJogo, String>> {
+        for (posicao_1, posicao_2, posicao_3) in get_jogadas_vencedoras(Rc::clone(&jogador)) {
+            if self.is_venceu_jogo(&posicao_1, &posicao_2, &posicao_3) {
+                let vencedor: Rc<Jogador> = Rc::new(jogador.tornar_vencedor());
+                self.estado_jogo = EstadoJogo::Finalizado(Rc::clone(&vencedor));
+                return Some(Ok(EstadoJogo::Finalizado(vencedor)));
+            }
+        }
+        None
+    }
+
+    fn adicionar_jogada(&mut self, jogada: Jogada) -> Result<(), String> {
+        if self.is_jogada_duplicada(&jogada) {
+            return Err(MSG_JOGADA_DUPLICADA.to_string());
+        }
+
+        self.jogadas.push(jogada);
+
+        Ok(())
+    }
+
+    fn is_jogada_duplicada(&self, jogada: &Jogada) -> bool {
+        self.jogadas
+            .iter()
+            .any(|jogada_| jogada_.get_posicao() == jogada.get_posicao())
+    }
 }
 
-fn criar_jogada(posicao: i32, jogador: Rc<Jogador>) -> Jogada {
-    Jogada::new(posicao, jogador)
-}
 
-fn construir_tupla(
-    n1: i32,
-    n2: i32,
-    n3: i32,
-    jogador: Rc<Jogador>,
-) -> (Jogada, Jogada, Jogada) {
-    (
-        criar_jogada(n1, Rc::clone(&jogador)),
-        criar_jogada(n2, Rc::clone(&jogador)),
-        criar_jogada(n3, Rc::clone(&jogador)),
-    )
-}
 
 fn get_jogadas_vencedoras(jogador: Rc<Jogador>) -> Vec<(Jogada, Jogada, Jogada)> {
+
+    fn construir_tupla(n1: i32, n2: i32, n3: i32, jogador: Rc<Jogador>) -> (Jogada, Jogada, Jogada) {
+
+        let criar_jogada = |posicao: i32| -> Jogada {
+            Jogada::new(posicao, Rc::clone(&jogador))
+        };
+
+        (
+            criar_jogada(n1),
+            criar_jogada(n2),
+            criar_jogada(n3),
+        )
+    }
+
     let mut retorno = Vec::new();
     retorno.push(construir_tupla(1, 2, 3, Rc::clone(&jogador)));
     retorno.push(construir_tupla(4, 5, 6, Rc::clone(&jogador)));
@@ -163,11 +182,13 @@ fn get_jogadas_vencedoras(jogador: Rc<Jogador>) -> Vec<(Jogada, Jogada, Jogada)>
     retorno
 }
 
-fn is_posicao_invalida(posicao: i32) -> bool {
-    posicao < 1 || posicao > 9
-}
 
 pub fn jogar() {
+
+    let is_posicao_invalida = |posicao: i32| -> bool {
+        posicao < 1 || posicao > 9
+    };
+
     let maria = Rc::new(Jogador::maria());
     let joao = Rc::new(Jogador::joao());
     let mut jogador_atual = Rc::clone(&maria);
@@ -232,12 +253,5 @@ pub fn jogar() {
                 break;
             }
         }
-
-        println!("Numero de cópias da Maria {}", Rc::strong_count(&maria));
-        println!("Numero de cópias do João {}", Rc::strong_count(&joao));
     }
-
-    println!("Numero de cópias da Maria {}", Rc::strong_count(&maria));
-    println!("Numero de cópias do João {}", Rc::strong_count(&joao));
-
 }

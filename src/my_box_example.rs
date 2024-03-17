@@ -1,4 +1,3 @@
-
 // https://rust-br.github.io/rust-book-pt-br/ch15-01-box.html
 
 #[derive(Debug)]
@@ -12,7 +11,7 @@ struct NovaPessoa {
 }
 
 impl Pessoa {
-    fn new (nome: String, idade: i32) -> Self {
+    fn new(nome: String, idade: i32) -> Self {
         Self {
             nome: nome,
             idade: idade,
@@ -24,7 +23,10 @@ impl Pessoa {
     }
 
     fn dizer_ola(&self, prefixo: &str) {
-        println!("{} - Eu sou {}, e tenho {} anos", prefixo, self.nome, self.idade);
+        println!(
+            "{} - Eu sou {}, e tenho {} anos",
+            prefixo, self.nome, self.idade
+        );
     }
 }
 
@@ -33,13 +35,13 @@ trait Saudar {
 }
 
 impl Saudar for Pessoa {
-    fn fazer_saudacao(&self, saudacao: &str){
+    fn fazer_saudacao(&self, saudacao: &str) {
         println!("Pessoa {} Saudando: {}", self.nome, saudacao);
     }
 }
 
 impl Saudar for NovaPessoa {
-    fn fazer_saudacao(&self, saudacao: &str){
+    fn fazer_saudacao(&self, saudacao: &str) {
         println!("Nova Pessoa {} Saudando: {}", self.nome, saudacao);
     }
 }
@@ -48,9 +50,7 @@ fn saudar(alguem_que_sauda: &Box<impl Saudar>) {
     alguem_que_sauda.fazer_saudacao("Olá mundo!");
 }
 
-
-pub fn run () {
-
+pub fn run() {
     // **** Entendendo o Box<T> ****
     let mut pessoa = Pessoa::new("Marcos".into(), 34);
 
@@ -74,15 +74,16 @@ pub fn run () {
 
     saudar(&box_pessoa);
 
-    let box_nova_pessoa = Box::new(NovaPessoa { nome: "Maria". into()});
+    let box_nova_pessoa = Box::new(NovaPessoa {
+        nome: "Maria".into(),
+    });
 
     saudar(&box_nova_pessoa);
 
     box_pessoa.dizer_ola("main fim");
-
 }
 
-fn usando_box(pessoa: &mut Box<Pessoa>){
+fn usando_box(pessoa: &mut Box<Pessoa>) {
     // Não permite executar um método que faça mutação quando o emprestimo não eh mutável
     // pessoa.atualizar_idade(35);
     pessoa.atualizar_idade(37);
@@ -95,5 +96,3 @@ fn mais_uma_funcao_mais_baixo_nivel(pessoa: &mut Box<Pessoa>) {
     pessoa.atualizar_idade(38);
     pessoa.dizer_ola("mais_uma_funcao_mais_baixo_nivel");
 }
-
-
