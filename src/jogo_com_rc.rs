@@ -1,3 +1,4 @@
+use std::cell::RefCell;
 use std::io::stdin;
 use std::rc::Rc;
 
@@ -32,17 +33,9 @@ impl Jogador {
         Self { nome, eh_vencedor }
     }
 
-    fn tornar_vencedor(vencedor: Rc<Self>) -> Self {
+    fn tornar_vencedor(vencedor: &Self) -> Self {
         Self::new(vencedor.get_nome().to_string(), true)
     }
-
-    /***
-    caso seja necessário atualizar o campo Jogador.ganhei, será necessário mudar o tipo,
-    pois apenas o Rc<T> não permite mutação.
-    Isso será resolvido em outro múdulo.
-    Estive pensando em progração funcional. O ideal é evitar dado mutável, seria melhor
-    criar um novo Jogador, com o status atualizado.
-     */
 }
 
 #[derive(Debug, Clone)]
@@ -75,17 +68,17 @@ enum EstadoJogo {
 }
 
 struct Jogo {
-    estado_jogo: EstadoJogo,
-    jogadas: Vec<Jogada>,
+    estado_jogo: RefCell<EstadoJogo>,
+    jogadas: RefCell<Vec<Jogada>>,
 }
 
 trait FazerJogada {
-    fn jogar(&mut self, posicao: i32, jogador: Rc<Jogador>) -> Result<EstadoJogo, String>;
+    fn jogar(&self, posicao: i32, jogador: Rc<Jogador>) -> Result<EstadoJogo, String>;
 }
 
 impl FazerJogada for Jogo {
-    fn jogar(&mut self, posicao: i32, jogador: Rc<Jogador>) -> Result<EstadoJogo, String> {
-        if self.estado_jogo != EstadoJogo::Aberto {
+    fn jogar(&self, posicao: i32, jogador: Rc<Jogador>) -> Result<EstadoJogo, String> {
+        if self.obter_estado_atual() != EstadoJogo::Aberto {
             return Err("Estado inválido.".to_string());
         }
 
@@ -94,13 +87,13 @@ impl FazerJogada for Jogo {
         self.adicionar_jogada(jogada)?;
 
         if let Some(novo_estado_jogo) = self.is_jogada_vencedora(Rc::clone(&jogador)) {
-            self.estado_jogo = novo_estado_jogo?;
-            return Ok(self.estado_jogo.clone());
+            self.atribuir_novo_estado(novo_estado_jogo?);
+            return Ok(self.obter_estado_atual());
         }
 
         if !self.tem_jodada_disponivel() {
-            self.estado_jogo = EstadoJogo::Empate;
-            return Ok(self.estado_jogo.clone());
+            self.atribuir_novo_estado(EstadoJogo::Empate);
+            return Ok(self.obter_estado_atual());
         }
 
         Ok(EstadoJogo::Aberto)
@@ -108,15 +101,22 @@ impl FazerJogada for Jogo {
 }
 
 impl Jogo {
+    fn obter_estado_atual(&self) -> EstadoJogo {
+        self.estado_jogo.borrow().clone()
+    }
+
+    fn atribuir_novo_estado(&self, novo_estado: EstadoJogo) {
+        *self.estado_jogo.borrow_mut() = novo_estado;
+    }
     fn new() -> Jogo {
         Jogo {
-            estado_jogo: EstadoJogo::Aberto,
-            jogadas: Vec::new(),
+            estado_jogo: RefCell::new(EstadoJogo::Aberto),
+            jogadas: RefCell::new(Vec::new()),
         }
     }
 
     fn tem_jodada_disponivel(&self) -> bool {
-        !(self.jogadas.len() == 9)
+        !(self.jogadas.borrow().len() == 9)
     }
 
     fn is_jogada_vencedora(&self, jogador: Rc<Jogador>) -> Option<Result<EstadoJogo, String>> {
@@ -132,28 +132,29 @@ impl Jogo {
         }
 
         for (posicao_1, posicao_2, posicao_3) in get_jogadas_vencedoras(Rc::clone(&jogador)) {
-            if is_venceu_jogo(&self.jogadas, &posicao_1, &posicao_2, &posicao_3) {
-                let vencedor: Rc<Jogador> = Rc::new(Jogador::tornar_vencedor(jogador));
+            if is_venceu_jogo(&self.jogadas.borrow(), &posicao_1, &posicao_2, &posicao_3) {
+                let vencedor: Rc<Jogador> = Rc::new(Jogador::tornar_vencedor(&jogador));
                 return Some(Ok(EstadoJogo::Finalizado(vencedor)));
             }
         }
         None
     }
 
-    fn adicionar_jogada(&mut self, jogada: Jogada) -> Result<(), String> {
-        if self.is_jogada_duplicada(&jogada) {
+    fn adicionar_jogada(&self, jogada: Jogada) -> Result<(), String> {
+        let is_duplicada: bool = {
+            self.jogadas
+                .borrow()
+                .iter()
+                .any(|jogada_| jogada_.get_posicao() == jogada.get_posicao())
+        };
+
+        if is_duplicada {
             return Err(MSG_JOGADA_DUPLICADA.to_string());
         }
 
-        self.jogadas.push(jogada);
+        self.jogadas.borrow_mut().push(jogada);
 
         Ok(())
-    }
-
-    fn is_jogada_duplicada(&self, jogada: &Jogada) -> bool {
-        self.jogadas
-            .iter()
-            .any(|jogada_| jogada_.get_posicao() == jogada.get_posicao())
     }
 }
 
