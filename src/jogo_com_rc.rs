@@ -17,10 +17,11 @@ impl PartialEq for Jogador {
 }
 
 impl Jogador {
+    #[allow(dead_code)]
     fn maria() -> Self {
         Self::new("Maria".to_string(), false)
     }
-
+    #[allow(dead_code)]
     fn joao() -> Self {
         Self::new("Joao".to_string(), false)
     }
@@ -183,13 +184,15 @@ fn get_jogadas_vencedoras(jogador: Rc<Jogador>) -> Vec<(Jogada, Jogada, Jogada)>
     retorno
 }
 
+
+#[allow(dead_code)]
 pub fn jogar() {
     let is_posicao_invalida = |posicao: i32| -> bool { posicao < 1 || posicao > 9 };
 
     let maria = Rc::new(Jogador::maria());
     let joao = Rc::new(Jogador::joao());
     let mut jogador_atual = Rc::clone(&maria);
-    let mut jogo: Jogo = Jogo::new();
+    let jogo: Jogo = Jogo::new();
 
     let mut buffer = String::new();
 

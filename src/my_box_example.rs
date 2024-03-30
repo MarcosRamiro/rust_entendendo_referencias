@@ -91,8 +91,9 @@ fn usando_box(pessoa: &mut Box<Pessoa>) {
     mais_uma_funcao_mais_baixo_nivel(pessoa);
     pessoa.dizer_ola("usando_box 2");
 }
+#[allow(dead_code)]
 
-fn mais_uma_funcao_mais_baixo_nivel(pessoa: &mut Box<Pessoa>) {
+fn mais_uma_funcao_mais_baixo_nivel(pessoa: &mut Pessoa) {
     pessoa.atualizar_idade(38);
     pessoa.dizer_ola("mais_uma_funcao_mais_baixo_nivel");
 }

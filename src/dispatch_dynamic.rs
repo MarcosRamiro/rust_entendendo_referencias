@@ -31,19 +31,23 @@ trait AnimalSelvagem: Animal + Selvagem {}
 impl Selvagem for Urso {}
 impl AnimalSelvagem for Urso {}
 
+#[allow(dead_code)]
 fn emitir_som(animal: &dyn Animal) -> String {
     animal.emitir_som()
 }
 
+#[allow(dead_code)]
 fn emitir_som_generics<T: Animal>(animal: &T) -> String {
     animal.emitir_som()
 }
 
+#[allow(dead_code)]
 fn emitir_som_selvagem_generics<T: AnimalSelvagem>(animal: &T) -> String {
     println!("animal selvagem irá emitir um som:");
     animal.emitir_som()
 }
 
+#[allow(dead_code)]
 pub fn entendendo_traits() {
     let animais = criar_animais();
 
@@ -60,6 +64,7 @@ pub fn entendendo_traits() {
     println!("{}", emitir_som_selvagem_generics(box_urso.as_ref()));
 }
 
+#[allow(dead_code)]
 fn criar_animais() -> Vec<Box<dyn Animal>> {
     let cachorro: Box<dyn Animal> = Box::from(Cachorro {});
     let gato: Box<dyn Animal> = Box::from(Gato {});
@@ -68,6 +73,7 @@ fn criar_animais() -> Vec<Box<dyn Animal>> {
     vec![cachorro, gato, urso]
 }
 
+#[allow(dead_code)]
 fn imprimir_vetor(animais: &Vec<Box<dyn Animal>>) -> () {
     for animal in animais {
         println!("{}", emitir_som(animal.as_ref()));
