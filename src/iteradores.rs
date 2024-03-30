@@ -8,9 +8,17 @@ impl Cachorro {
     fn new(nome: String, idade: u32) -> Self {
         Self { nome, idade }
     }
+
+    fn get_nome(&self) -> &str {
+        self.nome.as_str()
+    }
+
+    fn get_idade(&self) -> u32 {
+        self.idade
+    }
 }
 
-pub fn entendendo_iteradores() {
+pub fn entendendo_iteradores() -> () {
     let dog = Cachorro::new("Fido".to_string(), 5);
     let dog1 = Cachorro::new("Duque".to_string(), 10);
     let dog2 = Cachorro::new("Max".to_string(), 1);
@@ -21,21 +29,30 @@ pub fn entendendo_iteradores() {
 
     let new_iter = dogs
         .iter()
-        .filter(|c| c.idade > 2)
-        .map(|c| (c.nome.clone(), c.idade));
+        .filter(|c: &&Cachorro| c.get_idade() > 2)
+        .map(|cachorro: &Cachorro| (cachorro.get_nome(), cachorro.idade));
 
     for dog in new_iter {
         println!("{} {}", dog.0, dog.1);
     }
 
-    let idade_total = dogs.iter().fold(0_u32, acumular_idade);
+    let idade_total = dogs
+        .iter()
+        .fold(0_u32, |acumulador: u32, cachorro: &Cachorro| {
+            calcula_idade(acumulador, cachorro, acumular_idade)
+        });
 
     println!("A idade total dos cachorros é: {} anos", idade_total);
 
     println!("Cachorros: {:?}", dogs);
 }
+
 fn acumular_idade(acumulador: u32, cachorro: &Cachorro) -> u32 {
     acumulador + cachorro.idade
+}
+
+fn calcula_idade(acumulador: u32, cachorro: &Cachorro, funcao: fn(u32, &Cachorro) -> u32) -> u32 {
+    funcao(acumulador, cachorro)
 }
 
 #[cfg(test)]
