@@ -99,6 +99,10 @@ pub fn entendendo_funcoes_de_alta_ordem() -> () {
     );
 
     println!("Fim");
+
+    // eu consigo usar aqui com o comando "create::" pois na main está declarado o módulo "minha_senha"
+    use crate::minha_senha::obter_senha;
+    obter_senha();
 }
 
 fn obter_soma_idade_cachorro<F>(cachorro: &Cachorro, funcao: &mut F) -> u32
