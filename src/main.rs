@@ -1,18 +1,17 @@
+mod deserializacao;
 mod dispatch_dynamic;
 mod funcional;
 mod iteradores;
 mod jogo_com_rc;
+mod minha_senha;
 mod my_box_example;
 mod my_rc_example;
-mod minha_senha;
-mod deserializacao;
 
 use dispatch_dynamic::entendendo_traits;
 use funcional::entendendo_funcoes_de_alta_ordem;
 use iteradores::entendendo_iteradores;
 use jogo_com_rc::jogar;
 use my_box_example::run;
-
 
 fn main() {
     //run();
@@ -22,5 +21,4 @@ fn main() {
     // entendendo_iteradores();
     // entendendo_funcoes_de_alta_ordem();
     deserializacao::como_deserealizar().expect("Deu ruim");
-   
 }

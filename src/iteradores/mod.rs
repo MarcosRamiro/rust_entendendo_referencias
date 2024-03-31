@@ -18,7 +18,7 @@ impl Cachorro {
         self.idade
     }
 }
-    
+
 #[allow(dead_code)]
 pub fn entendendo_iteradores() -> () {
     let dog = Cachorro::new("Fido".to_string(), 5);

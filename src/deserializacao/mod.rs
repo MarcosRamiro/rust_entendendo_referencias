@@ -1,32 +1,52 @@
 use serde::{Deserialize, Serialize};
 //use serde_json::to_string;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 struct Cachorro<T> {
     nome: String,
     idade: T,
+    tipo: TipoCachorro,
+}
+
+#[derive(Serialize, Deserialize)]
+enum TipoCachorro {
+    ViraLata,
+    DeRaca,
+}
+
+impl std::fmt::Display for TipoCachorro {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            TipoCachorro::DeRaca => write!(f, "De Raça"),
+            TipoCachorro::ViraLata => write!(f, "Vira Latas"),
+        }
+    }
 }
 
 impl<T> Cachorro<T> {
-    fn new(nome: String, idade: T) -> Self {
-        Self { nome, idade }
+    fn new(nome: String, idade: T, tipo: TipoCachorro) -> Self {
+        Self { nome, idade, tipo }
     }
     fn latir(&self) -> () {
-        println!("Chachorro {} está latindo...", self.nome);
+        println!("Cachorro {} está latindo...", self.nome);
     }
 }
 
-impl<T> std::fmt::Display for Cachorro<T> 
-where T: std::fmt::Display {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Cachorro(nome: {}, idade: {})", self.nome, self.idade)
+impl<T> std::fmt::Display for Cachorro<T>
+where
+    T: std::fmt::Display,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(
+            f,
+            "Cachorro(nome: {}, idade: {}, tipo: {})",
+            self.nome, self.idade, self.tipo
+        )
     }
 }
-
 
 pub fn como_deserealizar() -> Result<(), String> {
-
-    let caramelo: Cachorro<_> = Cachorro::new("Caramelo".to_string(), 5_u8);
+    let caramelo: Cachorro<_> = Cachorro::new("Caramelo".to_string(), 5_u8, TipoCachorro::ViraLata);
     let serialized: String = serde_json::to_string(&caramelo).unwrap();
 
     println!("serialized = {}", serialized);
@@ -35,10 +55,5 @@ pub fn como_deserealizar() -> Result<(), String> {
     println!("deserialized = {}", deserialized);
     deserialized.latir();
 
-    if deserialized.nome == String::from("Caramelo") {
-        return Err("Nome não pode ser caramelo".to_string())
-    }
-
     Ok(())
-    
 }

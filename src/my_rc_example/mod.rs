@@ -21,7 +21,7 @@ impl Pessoa {
             idade: idade,
         }
     }
-    
+
     // essa é uma função mutável
     #[allow(dead_code)]
     fn atualizar_idade(&mut self, nova_idade: i32) {

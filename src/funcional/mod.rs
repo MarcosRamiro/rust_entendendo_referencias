@@ -113,14 +113,13 @@ where
 }
 
 fn criar_funcao(msg: String) -> impl Fn(Cachorro) -> () {
-    
     let retorno = move |cachorro: Cachorro| {
         println!("{msg} {} {}", cachorro.get_nome(), cachorro.get_idade());
     };
 
     // msg foi movido para a função retorno
     //println!("Isso nao deve funcionar {}", msg);
-    
+
     retorno
 }
 
