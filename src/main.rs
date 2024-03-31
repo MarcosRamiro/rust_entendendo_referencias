@@ -1,5 +1,7 @@
+#[allow(unused_imports)]
 mod deserializacao;
 mod dispatch_dynamic;
+mod entenderndo_regex;
 mod funcional;
 mod iteradores;
 mod jogo_com_rc;
@@ -20,5 +22,7 @@ fn main() {
     // entendendo_traits();
     // entendendo_iteradores();
     // entendendo_funcoes_de_alta_ordem();
-    deserializacao::como_deserealizar().expect("Deu ruim");
+    // deserializacao::como_deserealizar().expect("Deu ruim");
+
+    entenderndo_regex::como_usar_regex();
 }

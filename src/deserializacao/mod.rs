@@ -8,21 +8,6 @@ struct Cachorro<T> {
     tipo: TipoCachorro,
 }
 
-#[derive(Serialize, Deserialize)]
-enum TipoCachorro {
-    ViraLata,
-    DeRaca,
-}
-
-impl std::fmt::Display for TipoCachorro {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        match self {
-            TipoCachorro::DeRaca => write!(f, "De Raça"),
-            TipoCachorro::ViraLata => write!(f, "Vira Latas"),
-        }
-    }
-}
-
 impl<T> Cachorro<T> {
     fn new(nome: String, idade: T, tipo: TipoCachorro) -> Self {
         Self { nome, idade, tipo }
@@ -42,6 +27,21 @@ where
             "Cachorro(nome: {}, idade: {}, tipo: {})",
             self.nome, self.idade, self.tipo
         )
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+enum TipoCachorro {
+    ViraLata,
+    DeRaca,
+}
+
+impl std::fmt::Display for TipoCachorro {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            TipoCachorro::DeRaca => write!(f, "De Raça"),
+            TipoCachorro::ViraLata => write!(f, "Vira Latas"),
+        }
     }
 }
 
