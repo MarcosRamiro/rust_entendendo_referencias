@@ -4,6 +4,7 @@ mod iteradores;
 mod jogo_com_rc;
 mod my_box_example;
 mod my_rc_example;
+mod minha_senha;
 
 use dispatch_dynamic::entendendo_traits;
 use funcional::entendendo_funcoes_de_alta_ordem;
@@ -18,4 +19,5 @@ fn main() {
     // entendendo_traits();
     // entendendo_iteradores();
     entendendo_funcoes_de_alta_ordem();
+    minha_senha::obter_senha();
 }

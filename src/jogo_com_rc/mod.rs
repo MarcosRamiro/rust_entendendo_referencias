@@ -109,6 +109,7 @@ impl Jogo {
     fn atribuir_novo_estado(&self, novo_estado: EstadoJogo) {
         *self.estado_jogo.borrow_mut() = novo_estado;
     }
+    
     fn new() -> Jogo {
         Jogo {
             estado_jogo: RefCell::new(EstadoJogo::Aberto),

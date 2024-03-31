@@ -50,6 +50,7 @@ fn saudar(alguem_que_sauda: &Box<impl Saudar>) {
     alguem_que_sauda.fazer_saudacao("Olá mundo!");
 }
 
+#[allow(dead_code)]
 pub fn run() {
     // **** Entendendo o Box<T> ****
     let mut pessoa = Pessoa::new("Marcos".into(), 34);
@@ -83,6 +84,7 @@ pub fn run() {
     box_pessoa.dizer_ola("main fim");
 }
 
+#[allow(dead_code)]
 fn usando_box(pessoa: &mut Box<Pessoa>) {
     // Não permite executar um método que faça mutação quando o emprestimo não eh mutável
     // pessoa.atualizar_idade(35);
@@ -91,8 +93,8 @@ fn usando_box(pessoa: &mut Box<Pessoa>) {
     mais_uma_funcao_mais_baixo_nivel(pessoa);
     pessoa.dizer_ola("usando_box 2");
 }
-#[allow(dead_code)]
 
+#[allow(dead_code)]
 fn mais_uma_funcao_mais_baixo_nivel(pessoa: &mut Pessoa) {
     pessoa.atualizar_idade(38);
     pessoa.dizer_ola("mais_uma_funcao_mais_baixo_nivel");
