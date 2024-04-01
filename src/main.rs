@@ -8,6 +8,7 @@ mod jogo_com_rc;
 mod minha_senha;
 mod my_box_example;
 mod my_rc_example;
+mod tratamento_erro;
 
 use dispatch_dynamic::entendendo_traits;
 use funcional::entendendo_funcoes_de_alta_ordem;
@@ -24,5 +25,10 @@ fn main() {
     // entendendo_funcoes_de_alta_ordem();
     // deserializacao::como_deserealizar().expect("Deu ruim");
 
-    entenderndo_regex::como_usar_regex();
+    // entenderndo_regex::como_usar_regex();
+    let resultado = tratamento_erro::como_tratar_erros();
+
+    if resultado.is_err() {
+        println!("Erro no main: {}", resultado.err().unwrap())
+    }
 }

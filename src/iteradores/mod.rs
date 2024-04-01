@@ -5,21 +5,17 @@ struct Cachorro {
 }
 
 impl Cachorro {
-    #[allow(dead_code)]
     fn new(nome: String, idade: u32) -> Self {
         Self { nome, idade }
     }
-    #[allow(dead_code)]
     fn get_nome(&self) -> &str {
         self.nome.as_str()
     }
-    #[allow(dead_code)]
     fn get_idade(&self) -> u32 {
         self.idade
     }
 }
 
-#[allow(dead_code)]
 pub fn entendendo_iteradores() -> () {
     let dog = Cachorro::new("Fido".to_string(), 5);
     let dog1 = Cachorro::new("Duque".to_string(), 10);
@@ -49,13 +45,15 @@ pub fn entendendo_iteradores() -> () {
     println!("Cachorros: {:?}", dogs);
 }
 
-#[allow(dead_code)]
 fn acumular_idade(acumulador: u32, cachorro: &Cachorro) -> u32 {
     acumulador + cachorro.idade
 }
 
-#[allow(dead_code)]
-fn calcula_idade(acumulador: u32, cachorro: &Cachorro, funcao: fn(u32, &Cachorro) -> u32) -> u32 {
+fn calcula_idade(
+    acumulador: u32,
+    cachorro: &Cachorro,
+    funcao: impl Fn(u32, &Cachorro) -> u32,
+) -> u32 {
     funcao(acumulador, cachorro)
 }
 
